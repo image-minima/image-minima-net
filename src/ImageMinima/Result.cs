@@ -9,10 +9,9 @@ namespace ImageMinima
         protected HttpContentHeaders content;
         protected byte[] data;
 
-        internal Result(HttpResponseHeaders meta, HttpContentHeaders content, byte[] data) : base(meta)
+        internal Result(HttpResponseHeaders meta, HttpContentHeaders content) : base(meta)
         {
             this.content = content;
-            this.data = data;
         }
 
         public async Task ToFile(string path)

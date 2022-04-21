@@ -55,7 +55,7 @@ dotnet test test/ImageMinima.Tests
 
 ```
 dotnet restore
-IMAGE_MINIMA_KEY=$YOUR_API_KEY dotnet test test/ImageMinima.Tests.Integration
+IMAGE_MINIMA_KEY=$YOUR_API_KEY dotnet test src/ImageMinima.Tests.Integration
 ```
 Or add a `.env` file to the `/test/ImageMinima.Tests.Integration` directory in the format
 ```

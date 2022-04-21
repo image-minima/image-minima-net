@@ -1,7 +1,5 @@
-﻿using ImageMinima.Tests.Integration.Helpers;
-using System;
+﻿using System;
 using System.IO;
-using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -9,33 +7,69 @@ namespace ImageMinima.Tests.Integration
 {
     public class ClientTests
     {
+        public ClientTests()
+        {
+            Environment.SetEnvironmentVariable("IMAGE_MINIMA_TOKEN", "teste123");
 
-        [IntegrationTest]
+        }
+
+        sealed class TempFile : IDisposable
+        {
+            private string path;
+
+            public string Path
+            {
+                get { return path; }
+            }
+
+            public TempFile()
+            {
+                path = System.IO.Path.GetTempFileName();
+            }
+
+            ~TempFile()
+            {
+                Dispose(false);
+            }
+
+            public void Dispose()
+            {
+                Dispose(true);
+            }
+
+            private void Dispose(bool disposing)
+            {
+                if (disposing) GC.SuppressFinalize(this);
+                try { File.Delete(path); } catch { }
+                path = null;
+            }
+        }
+
+        [Fact]
         public async Task ShouldCompressFile()
         {
-            //var imageMinimaClient = Helper.GetAuthenticatedClient();
+            var client = Helper.GetAuthenticatedClient();
 
-            //var unoptimizedPath = AppContext.BaseDirectory + "/assets/voormedia.png";
+            var unoptimizedPath = AppContext.BaseDirectory + "../../../assets/sample.jpg";
 
-            //var optimized = imageMinimaClient.FromFile(unoptimizedPath);
+            var optimized = await Source.FromFile(unoptimizedPath);
 
-            //using (var file = new TempFile())
-            //{
-            //    optimized.ToFile(file.Path).Wait();
+            using (var file = new TempFile())
+            {
+                var resizeOptions = new { width = 100, height = 60 };
+                var shrinkOptions = new {};
 
-            //    var size = new FileInfo(file.Path).Length;
-            //    var contents = File.ReadAllBytes(file.Path);
+                optimized.Shrink(shrinkOptions);
 
-            //    Assert.Greater(size, 1000);
-            //    Assert.Less(size, 1500);
+                optimized.ToFile(file.Path);
 
-            //    /* width == 137 */
-            //    CollectionAssert.IsSubsetOf(new byte[] { 0, 0, 0, 0x89 }, contents);
-            //    CollectionAssert.IsNotSubsetOf(
-            //        Encoding.ASCII.GetBytes("Copyright Voormedia"),
-            //        contents
-            //    );
-            //}
+                await client.Process(optimized);
+
+                var size = new FileInfo(file.Path).Length;
+
+                Assert.True(size > 706000);
+                Assert.True(size < 707000);
+            }
         }
     }
 }

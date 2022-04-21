@@ -1,7 +1,10 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,23 +13,17 @@ namespace ImageMinima
 {
     public class Repository : IDisposable
     {
-        public static readonly Uri ApiEndpoint = new Uri("https://image-minima.com");
+        //public static readonly Uri ApiEndpoint = new Uri("https://imageminima.com/api/");
+        public static readonly Uri ApiEndpoint = new Uri("http://localhost:5000/api/");
 
         public static readonly ushort RetryCount = 1;
         public static readonly ushort RetryDelay = 500;
 
-        //public static readonly string UserAgent = Internal.Platform.UserAgent;
-
         HttpClient client;
 
-        public Repository(string key, string appIdentifier = null, string proxy = null)
+        public Repository(string key)
         {
-            var handler = new HttpClientHandler()
-            {
-                ServerCertificateCustomValidationCallback = SSL.ValidationCallback
-            };
-
-            client = new HttpClient(handler)
+            client = new HttpClient()
             {
                 BaseAddress = ApiEndpoint,
                 Timeout = Timeout.InfiniteTimeSpan,
@@ -36,43 +33,56 @@ namespace ImageMinima
             client.DefaultRequestHeaders.Add("Authorization", "Basic " + credentials);
         }
 
-        public Task<HttpResponseMessage> Request(HttpMethod method, string url)
+        public Task<HttpResponseMessage> Request(HttpMethod method, string url, object options)
         {
-            return Request(method, new Uri(url, UriKind.Relative));
-        }
-
-        public Task<HttpResponseMessage> Request(HttpMethod method, string url, byte[] body)
-        {
-            return Request(method, new Uri(url, UriKind.Relative), body);
-        }
-
-        public Task<HttpResponseMessage> Request(HttpMethod method, string url, Dictionary<string, object> options)
-        {
-            return Request(method, new Uri(url, UriKind.Relative), options);
-        }
-
-        public Task<HttpResponseMessage> Request(HttpMethod method, Uri url, byte[] body)
-        {
-            return Request(method, url, new ByteArrayContent(body));
-        }
-
-        public Task<HttpResponseMessage> Request(HttpMethod method, Uri url, Dictionary<string, object> options)
-        {
-            if (method == HttpMethod.Get && options.Count == 0)
+            if (method == HttpMethod.Get && options != null)
             {
                 return Request(method, url);
             }
             else
             {
-                //var json = JsonConvert.SerializeObject(options);
-                //var body = new StringContent(json, Encoding.UTF8, "application/json");
-                //return Request(method, url, body);
+                var body = new MultipartFormDataContent();
 
-                return null;
+                var json = JsonConvert.SerializeObject(options);
+                var data = new StringContent(json, Encoding.UTF8, "application/json");
+                body.Add(data);
+
+                return Request(method, url, body);
             }
         }
 
-        public async Task<HttpResponseMessage> Request(HttpMethod method, Uri url, HttpContent body = null)
+        public Task<HttpResponseMessage> Request(HttpMethod method, string url, byte[] file)
+        {
+            var body = new MultipartFormDataContent();
+
+            var fileContent = new ByteArrayContent(file);
+            fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse("image/jpeg");
+
+            body.Add(new StreamContent(new MemoryStream(file)), "file", "file");
+
+            return Request(method, url, body);
+        }
+
+        public Task<HttpResponseMessage> Request(HttpMethod method, string url, byte[] file, Dictionary<string, string> options)
+        {
+            if (method == HttpMethod.Get && options != null)
+            {
+                return Request(method, url);
+            }
+            else
+            {
+                var body = new MultipartFormDataContent();
+
+                foreach (var option in options)
+                    body.Add(new StringContent(option.Value));
+
+                body.Add(new StreamContent(new MemoryStream(file)), "file");
+
+                return Request(method, url, body);
+            }
+        }
+
+        public async Task<HttpResponseMessage> Request(HttpMethod method, string url, HttpContent body = null)
         {
             for (short retries = (short)RetryCount; retries >= 0; retries--)
             {
@@ -125,10 +135,10 @@ namespace ImageMinima
                 var data = new { message = "", error = "" };
                 try
                 {
-                    //data = JsonConvert.DeserializeAnonymousType(
-                    //    await response.Content.ReadAsStringAsync().ConfigureAwait(false),
-                    //    data
-                    //);
+                    data = JsonConvert.DeserializeAnonymousType(
+                        await response.Content.ReadAsStringAsync().ConfigureAwait(false),
+                        data
+                    );
                 }
                 catch (Exception err)
                 {
