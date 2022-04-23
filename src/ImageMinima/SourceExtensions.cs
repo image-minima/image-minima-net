@@ -1,8 +1,10 @@
+using ImageMinima.DTO.Commands;
+
 namespace ImageMinima
 {
     public static class SourceExtensions
     {
-        public static Source Resize(this Source source, object options)
+        public static Source Resize(this Source source, ResizeRequest options)
         {
            source.Commands.Add(Commands.RESIZE, options);
 

@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Net.Http.Headers;
-using System.Text;
 
 namespace ImageMinima
 {
@@ -58,12 +56,6 @@ namespace ImageMinima
             }
         }
 
-        public Uri Location
-        {
-            get
-            {
-                return meta.Location;
-            }
-        }
+        public string Location { get; set; }
     }
 }

@@ -1,5 +1,4 @@
 using ImageMinima.DTO;
-using ImageMinima.Results;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -48,15 +47,25 @@ namespace ImageMinima
 
                         var data = JsonConvert.DeserializeObject<ShrinkResponse>(body);
 
-                        source.Results.Add(new ShrinkResult(response.Headers, response.Content.Headers, data));
+                        var result = new Result(response.Headers, response.Content.Headers);
+                        
+                        result.Location = data.output;                        
+
+                        source.Results.Add(result);
+
+                        source.Url = new Uri(data.output);
+
                         break;
                     }
                     case Commands.RESIZE:
                     {
-                        response = await new Repository(Key).Request(HttpMethod.Get, "resize", command.Value).ConfigureAwait(false);
+                        if (source.Url == null)
+                            break;
+
+                        response = await new Repository(Key).Request(HttpMethod.Post, source.Url.ToString(), command.Value).ConfigureAwait(false);
                         var body = await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
 
-                        source.Results.Add(new Result(response.Headers, response.Content.Headers));
+                        source.Results.Add(new Result(response.Headers, response.Content.Headers, body));
                         break;
                     }
                     case Commands.TO_FILE:
@@ -67,10 +76,17 @@ namespace ImageMinima
 
                         using (var file = File.Create((string)value))
                         {
-                            var url = ((ShrinkResult)source.Results[source.Results.Count - 1]).ShrinkData.output;
-                            response = await new Repository(Key).Request(HttpMethod.Get, url).ConfigureAwait(false);
+                            var lastResult = source.Results[source.Results.Count - 1];
 
-                            var content = await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
+                            var content = lastResult.data;
+
+                            if (content == null)
+                            {
+                                var url = source.Results[source.Results.Count - 1].Location;
+                                response = await new Repository(Key).Request(HttpMethod.Get, url.ToString()).ConfigureAwait(false);
+
+                                content = await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
+                            }
 
                             await file.WriteAsync(content, 0, content.Length).ConfigureAwait(false);
                         };

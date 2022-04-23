@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,7 +15,7 @@ namespace ImageMinima
     public class Repository : IDisposable
     {
         public static readonly Uri ApiEndpoint = new Uri("https://imageminima.com/api/");
-        
+
         public static readonly ushort RetryCount = 1;
         public static readonly ushort RetryDelay = 500;
 
@@ -40,13 +41,20 @@ namespace ImageMinima
             }
             else
             {
-                var body = new MultipartFormDataContent();
+                //var body = new MultipartFormDataContent();
 
-                var json = JsonConvert.SerializeObject(options);
-                var data = new StringContent(json, Encoding.UTF8, "application/json");
-                body.Add(data);
+                //Type type = options.GetType();
+                //var props = type.GetProperties();
 
-                return Request(method, url, body);
+                //foreach(var prop in props)
+                //{
+                //    object value = prop.GetValue(options, null);
+                //    body.Add(new StringContent(value.ToString()), prop.Name.ToLower());
+                //}
+
+                var data = new StringContent(JsonConvert.SerializeObject(options), Encoding.UTF8, "application/json");
+
+                return Request(method, url, data);
             }
         }
 
@@ -62,7 +70,7 @@ namespace ImageMinima
             return Request(method, url, body);
         }
 
-        public Task<HttpResponseMessage> Request(HttpMethod method, string url, byte[] file, Dictionary<string, string> options)
+        public Task<HttpResponseMessage> Request(HttpMethod method, string url, byte[] file, Dictionary<string, object> options)
         {
             if (method == HttpMethod.Get && options != null)
             {
@@ -73,7 +81,7 @@ namespace ImageMinima
                 var body = new MultipartFormDataContent();
 
                 foreach (var option in options)
-                    body.Add(new StringContent(option.Value));
+                    body.Add(new StringContent(JsonConvert.SerializeObject(option.Value)));
 
                 body.Add(new StreamContent(new MemoryStream(file)), "file");
 

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ImageMinima.DTO.Commands;
+using System;
 using System.IO;
 using System.Threading.Tasks;
 using Xunit;
@@ -56,12 +57,11 @@ namespace ImageMinima.Tests.Integration
 
             using (var file = new TempFile())
             {
-                var resizeOptions = new { width = 100, height = 60 };
-                var shrinkOptions = new {};
+                var shrinkOptions = new { };
 
-                optimized.Shrink(shrinkOptions);
-
-                optimized.ToFile(file.Path);
+                optimized
+                    .Shrink(shrinkOptions)
+                    .ToFile(file.Path);
 
                 await client.Process(optimized);
 
@@ -69,6 +69,58 @@ namespace ImageMinima.Tests.Integration
 
                 Assert.True(size > 706000);
                 Assert.True(size < 707000);
+            }
+        }
+
+        [Fact]
+        public async Task ShouldCompressFileAndFillSourceUrl()
+        {
+            var client = Helper.GetAuthenticatedClient();
+
+            var unoptimizedPath = AppContext.BaseDirectory + "../../../assets/sample.jpg";
+
+            var optimized = await Source.FromFile(unoptimizedPath);
+
+            using (var file = new TempFile())
+            {
+                var resizeOptions = new { width = 100, height = 60 };
+                var shrinkOptions = new { };
+
+                optimized
+                    .Shrink(shrinkOptions)
+                    .ToFile(file.Path);
+
+                await client.Process(optimized);
+
+                Assert.False(string.IsNullOrEmpty(optimized.Url.ToString()));
+            }
+        }
+
+        [Fact]
+        public async Task ShouldCompressAndResizeFile()
+        {
+            var client = Helper.GetAuthenticatedClient();
+
+            var unoptimizedPath = AppContext.BaseDirectory + "../../../assets/sample.jpg";
+
+            var optimized = await Source.FromFile(unoptimizedPath);
+
+            using (var file = new TempFile())
+            {
+                var resizeOptions = new ResizeRequest() { Width = 100, Height = 60 };
+                var shrinkOptions = new { };
+
+                optimized
+                    .Shrink(shrinkOptions)
+                    .Resize(resizeOptions)
+                    .ToFile(file.Path);
+
+                await client.Process(optimized);
+
+                var size = new FileInfo(file.Path).Length;
+
+                Assert.True(size > 1140);
+                Assert.True(size < 1150);
             }
         }
     }
