@@ -13,9 +13,8 @@ namespace ImageMinima
 {
     public class Repository : IDisposable
     {
-        //public static readonly Uri ApiEndpoint = new Uri("https://imageminima.com/api/");
-        public static readonly Uri ApiEndpoint = new Uri("http://localhost:5000/api/");
-
+        public static readonly Uri ApiEndpoint = new Uri("https://imageminima.com/api/");
+        
         public static readonly ushort RetryCount = 1;
         public static readonly ushort RetryDelay = 500;
 
