@@ -4,6 +4,17 @@
     <VersionPrefix>6.0.0</VersionPrefix>
     <PackageId>ImageMinima</PackageId>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Authors>Rodrigo Vargas</Authors>
+    <PackageReadmeFile>.\README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" pack="true" PackagePath="." />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
