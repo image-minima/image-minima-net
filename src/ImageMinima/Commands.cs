@@ -8,5 +8,7 @@ namespace ImageMinima
         public const string RESIZE = "resize";
 
         public const string SHRINK = "shrink";
+
+        public const string WATERMARK = "WATERMARK";
     }
 }

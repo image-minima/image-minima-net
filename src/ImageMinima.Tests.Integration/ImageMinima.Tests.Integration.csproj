@@ -4,8 +4,6 @@
       <AssemblyName>ImageMinima.Tests.Integration</AssemblyName>
       <PackageId>ImageMinima.Tests.Integration</PackageId>
       <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
-      <NetStandardImplicitPackageVersion>2.1.0</NetStandardImplicitPackageVersion>
-      <RuntimeFrameworkVersion>2.1.0</RuntimeFrameworkVersion>
       <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
       <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
       <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>

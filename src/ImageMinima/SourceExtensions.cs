@@ -17,5 +17,11 @@ namespace ImageMinima
 
            return source;
         }
+
+         public static Source Watermark(this Source source, object options)
+        {
+           source.Commands.Add(Commands.WATERMARK, options);
+           return source;
+        }
     }
 }

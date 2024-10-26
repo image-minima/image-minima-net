@@ -45,19 +45,34 @@ namespace ImageMinima
             }
         }
 
-        public Task<HttpResponseMessage> Request(HttpMethod method, string url, byte[] file)
+        public Task<HttpResponseMessage> Request(HttpMethod method, string url, byte[] file, string fileName)
         {
             var body = new MultipartFormDataContent();
 
             var fileContent = new ByteArrayContent(file);
             fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse("image/jpeg");
 
-            body.Add(new StreamContent(new MemoryStream(file)), "file", "file");
+            body.Add(new StreamContent(new MemoryStream(file)), "file", fileName);
 
             return Request(method, url, body);
         }
 
-        public Task<HttpResponseMessage> Request(HttpMethod method, string url, byte[] file, Dictionary<string, object> options)
+        public Task<HttpResponseMessage> Request(
+            HttpMethod method, string url, byte[] file, string fileName, byte[] secondFile, string secondFileName
+        )
+        {
+            var body = new MultipartFormDataContent();
+
+            var fileContent = new ByteArrayContent(file);
+            fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse("image/jpeg");
+
+            body.Add(new StreamContent(new MemoryStream(file)), "file", fileName);
+            body.Add(new StreamContent(new MemoryStream(secondFile)), "watermarkImage", secondFileName);
+
+            return Request(method, url, body);
+        }
+
+        public Task<HttpResponseMessage> Request(HttpMethod method, string url, byte[] file, string fileName, Dictionary<string, object> options)
         {
             if (method == HttpMethod.Get && options != null)
             {
@@ -70,7 +85,7 @@ namespace ImageMinima
                 foreach (var option in options)
                     body.Add(new StringContent(JsonConvert.SerializeObject(option.Value)));
 
-                body.Add(new StreamContent(new MemoryStream(file)), "file");
+                body.Add(new StreamContent(new MemoryStream(file)), "file", fileName);
 
                 return Request(method, url, body);
             }

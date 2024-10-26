@@ -41,7 +41,39 @@ namespace ImageMinima
                 {
                     case Commands.SHRINK:
                     {
-                        response = await new Repository(Key).Request(HttpMethod.Post, "shrink", source.Buffer).ConfigureAwait(false);
+                        response = await new Repository(Key).Request(
+                            HttpMethod.Post,
+                            "shrink",
+                            source.FileBuffer,
+                            source.FileName
+                        ).ConfigureAwait(false);
+
+                        var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+                        var data = JsonConvert.DeserializeObject<ShrinkResponse>(body);
+
+                        var result = new Result(response.Headers, response.Content.Headers);
+                        
+                        result.Location = data.output;                        
+
+                        source.Results.Add(result);
+
+                        source.Url = new Uri(data.output);
+
+                        break;
+                    }
+                    case Commands.WATERMARK:
+                    {
+                        response = await new Repository(Key)
+                            .Request(
+                                HttpMethod.Post,
+                                "watermark",
+                                source.FileBuffer,
+                                source.FileName,
+                                source.WatermarkBuffer,
+                                source.WatermarkFileName
+                            )
+                            .ConfigureAwait(false);
 
                         var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
@@ -62,7 +94,10 @@ namespace ImageMinima
                         if (source.Url == null)
                             break;
 
-                        response = await new Repository(Key).Request(HttpMethod.Post, source.Url.ToString(), command.Value).ConfigureAwait(false);
+                        response = await new Repository(Key)
+                            .Request(HttpMethod.Post, source.Url.ToString(), command.Value)
+                            .ConfigureAwait(false);
+
                         var body = await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
 
                         source.Results.Add(new Result(response.Headers, response.Content.Headers, body));

@@ -123,5 +123,34 @@ namespace ImageMinima.Tests.Integration
                 Assert.True(size < 1150);
             }
         }
+
+        [Fact]
+        public async Task ShouldAddWatermarkToAFile()
+        {
+            var client = Helper.GetAuthenticatedClient();
+
+            var unoptimizedPath = AppContext.BaseDirectory + "../../../assets/sample.jpg";
+            var watemarkPath = AppContext.BaseDirectory + "../../../assets/watermark.jpg";
+
+            var sourceFile = await Source.FromFile(unoptimizedPath, watemarkPath);
+
+            using (var file = new TempFile())
+            {
+                var resizeOptions = new ResizeRequest() { Width = 100, Height = 60 };
+                var watermarkOptions = new { };
+
+                sourceFile
+                    .Watermark(watermarkOptions)
+                    .ToFile(file.Path);
+
+                await client.Process(sourceFile);
+
+                var size = new FileInfo(file.Path).Length;
+
+                Console.WriteLine(size);
+
+                Assert.True(size == 1075624);
+            }
+        }
     }
 }
