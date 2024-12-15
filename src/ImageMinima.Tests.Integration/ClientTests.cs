@@ -137,7 +137,10 @@ namespace ImageMinima.Tests.Integration
             using (var file = new TempFile())
             {
                 var resizeOptions = new ResizeRequest() { Width = 100, Height = 60 };
-                var watermarkOptions = new { };
+                var watermarkOptions = new WatermarkRequest() {
+                    markRatio = 0.5,
+                    transparency = 90
+                };
 
                 sourceFile
                     .Watermark(watermarkOptions)
@@ -147,9 +150,7 @@ namespace ImageMinima.Tests.Integration
 
                 var size = new FileInfo(file.Path).Length;
 
-                Console.WriteLine(size);
-
-                Assert.True(size == 1075624);
+                Assert.True(size == 4474955);
             }
         }
     }

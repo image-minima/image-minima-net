@@ -1,4 +1,5 @@
 using ImageMinima.DTO;
+using ImageMinima.DTO.Commands;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -71,7 +72,8 @@ namespace ImageMinima
                                 source.FileBuffer,
                                 source.FileName,
                                 source.WatermarkBuffer,
-                                source.WatermarkFileName
+                                source.WatermarkFileName,
+                                (Dictionary<string, object>)command.Value
                             )
                             .ConfigureAwait(false);
 

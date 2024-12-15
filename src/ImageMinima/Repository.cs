@@ -58,7 +58,9 @@ namespace ImageMinima
         }
 
         public Task<HttpResponseMessage> Request(
-            HttpMethod method, string url, byte[] file, string fileName, byte[] secondFile, string secondFileName
+            HttpMethod method, string url, byte[] file,
+            string fileName, byte[] secondFile, string secondFileName,
+            Dictionary<string, object> options
         )
         {
             var body = new MultipartFormDataContent();
@@ -68,6 +70,9 @@ namespace ImageMinima
 
             body.Add(new StreamContent(new MemoryStream(file)), "file", fileName);
             body.Add(new StreamContent(new MemoryStream(secondFile)), "watermarkImage", secondFileName);
+
+            foreach (var option in options)
+                body.Add(new StringContent(JsonConvert.SerializeObject(option.Value)), option.Key);
 
             return Request(method, url, body);
         }

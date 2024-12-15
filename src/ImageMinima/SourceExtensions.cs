@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using ImageMinima.DTO.Commands;
 
 namespace ImageMinima
@@ -18,9 +19,16 @@ namespace ImageMinima
            return source;
         }
 
-         public static Source Watermark(this Source source, object options)
+         public static Source Watermark(this Source source, WatermarkRequest options)
         {
-           source.Commands.Add(Commands.WATERMARK, options);
+           source.Commands.Add(Commands.WATERMARK, new Dictionary<string, object>(){
+               {
+                  "markRatio", options.markRatio
+               },
+               {
+                  "transparency", options.transparency
+               }
+           });
            return source;
         }
     }
